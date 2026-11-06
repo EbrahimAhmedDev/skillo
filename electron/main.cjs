@@ -14,14 +14,21 @@ const { createRunner } = require("./cli-runner.cjs");
 const { registerIpc } = require("./ipc.cjs");
 const { runSmoke } = require("./smoke.cjs");
 const { waitUntil } = require("./net.cjs");
+const { initHistory, appendHistory, isMutating } = require("./history.cjs");
 
 const DEV_URL = "http://localhost:5173/";
 
 let win = null;
 
+initHistory(app.getPath("userData"));
+
 const runner = createRunner({
   onEvent: (channel, payload) => {
     if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
+    // record every state-changing CLI run into the local history log
+    if (channel === "run:done" && isMutating(payload.label)) {
+      appendHistory({ label: payload.label, cmd: payload.cmd, code: payload.code, error: payload.error });
+    }
   },
 });
 const { handlers } = registerIpc({ runSkills: runner.runSkills, getWindow: () => win });

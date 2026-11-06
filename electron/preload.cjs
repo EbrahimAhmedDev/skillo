@@ -37,4 +37,10 @@ contextBridge.exposeInMainWorld("skillo", {
     ipcRenderer.on("run:done", fn);
     return () => ipcRenderer.removeListener("run:done", fn);
   },
+
+  history: (opts) => ipcRenderer.invoke("history:list", opts),
+  readSkillFile: (filePath) => ipcRenderer.invoke("app:readSkillFile", filePath),
+  saveJson: (opts) => ipcRenderer.invoke("app:saveJson", opts),
+  openJson: () => ipcRenderer.invoke("app:openJson"),
+  doctor: (opts) => ipcRenderer.invoke("skills:doctor", opts),
 });

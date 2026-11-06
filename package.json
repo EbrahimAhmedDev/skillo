@@ -6,6 +6,11 @@
   "main": "electron/main.cjs",
   "private": true,
   "license": "MIT",
+  "author": {
+    "name": "Ebrahim",
+    "email": "ebrahim.a77med@gmail.com",
+    "url": "https://github.com/EbrahimAhmedDev"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/EbrahimAhmedDev/skillo.git"
@@ -17,7 +22,20 @@
     "app": "electron .",
     "test": "node test/parsers.test.cjs",
     "smoke": "ESK_SMOKE=1 electron .",
-    "package": "electron-builder"
+    "desktop": "node scripts/install-desktop.cjs",
+    "package": "electron-builder --linux AppImage"
+  },
+  "build": {
+    "appId": "dev.ebrahim.skillo",
+    "productName": "Skillo",
+    "directories": { "output": "release" },
+    "files": ["electron/**/*", "dist/**/*", "package.json"],
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Development",
+      "icon": "assets/icons",
+      "desktop": { "Name": "Skillo", "Comment": "Skills manager for your AI agents" }
+    }
   },
   "dependencies": {
     "react": "^18.3.1",

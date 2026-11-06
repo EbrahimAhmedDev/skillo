@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Skillo icon: control-room tile, IBM Plex feel -->
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14201a"/>
+      <stop offset="1" stop-color="#0d1511"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="104" fill="url(#plate)"/>
+  <rect x="16.5" y="16.5" width="479" height="479" rx="103.5" fill="none" stroke="#2c3a32" stroke-width="3"/>
+  <!-- skill grid glyph -->
+  <g fill="none" stroke="#e2a53c" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="126" y="126" width="260" height="260" rx="30"/>
+    <path d="M126 213h260M213 213v173"/>
+  </g>
+  <!-- little live dot -->
+  <circle cx="356" cy="356" r="13" fill="#e2a53c"/>
+</svg>

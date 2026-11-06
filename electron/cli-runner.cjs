@@ -55,13 +55,13 @@ function createRunner({ onEvent = () => {} } = {}) {
       proc.on("error", (err) => {
         clearTimeout(timer);
         jobs.delete(id);
-        send("run:done", { id, code: -1, error: String(err) });
+        send("run:done", { id, label, cmd: `npx skills ${args.join(" ")}`, code: -1, error: String(err) });
         resolve({ id, code: -1, stdout, stderr, error: String(err) });
       });
       proc.on("close", (code) => {
         clearTimeout(timer);
         jobs.delete(id);
-        send(`run:done`, { id, code: code ?? -1 });
+        send("run:done", { id, label, cmd: `npx skills ${args.join(" ")}`, code: code ?? -1 });
         resolve({ id, code: code ?? -1, stdout, stderr });
       });
     });

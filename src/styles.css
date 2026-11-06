@@ -464,6 +464,140 @@ input::placeholder { color: var(--ink-faint); }
 }
 .create-name input { flex: 1; }
 
+/* ---------- skills toolbar: filter + sort + bulk ---------- */
+
+.filter-input { width: 220px; min-width: 140px; }
+
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.bulk-bar b { color: var(--ink); font-size: 13px; }
+
+.skill-card { position: relative; }
+.skill-card .pick-box {
+  position: absolute;
+  inset-inline-start: 16px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+}
+.skill-card .pick-box input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+.skill-card.has-pick .row-top { padding-inline-start: 26px; }
+
+/* ---------- SKILL.md viewer + health modal ---------- */
+
+.viewer-modal { max-width: 760px; width: 94vw; display: flex; flex-direction: column; }
+.viewer-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+.viewer-head h3 { margin: 0; white-space: nowrap; }
+.viewer-head .path { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.viewer-body {
+  margin: 14px 0 4px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  max-height: 52vh;
+  overflow: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+  direction: ltr;
+  text-align: left;
+}
+
+.health-report { display: flex; flex-direction: column; gap: 10px; }
+.issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 40vh;
+  overflow: auto;
+}
+.issue-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+}
+.issue-detail {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.issue-detail b { font-size: 13px; }
+.issue-detail .path { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.status-pill.warn {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--accent);
+}
+
+/* ---------- settings: backup + history ---------- */
+
+.import-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  max-height: 300px;
+  overflow: auto;
+}
+.import-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+}
+.import-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.import-main .mono {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: ltr;
+  text-align: start;
+  font-size: 12.5px;
+}
+
+.hist-list { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow: auto; }
+.hist-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  font-size: 12.5px;
+}
+.hist-row b { font-size: 12.5px; }
+.hist-row .hint { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---------- advanced ---------- */
 
 .adv-grid { display: grid; gap: 14px; max-width: 760px; }

@@ -12,6 +12,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const { parseSkillListing, parseFindOutput, tryJSON } = require("./parsers.cjs");
 const { searchSkillsSh } = require("./net.cjs");
+const { readHistory } = require("./history.cjs");
 
 const VERSION_RE = /^v?\d+\.\d+\.\d+/;
 const HOMEDIR = os.homedir();
@@ -160,6 +161,74 @@ function registerIpc({ runSkills, getWindow }) {
   });
 
   handle("app:defaultCwd", () => process.cwd() || HOMEDIR);
+
+  /* ---- history, doctor, file viewer, backup -------------------------- */
+
+  handle("history:list", async () => ({ ok: true, items: readHistory(300) }));
+
+  // Read a file (currently only SKILL.md files) as plain text.
+  handle("app:readSkillFile", async (_e, filePath) => {
+    try {
+      const p = String(filePath || "");
+      if (path.basename(p) !== "SKILL.md") return { ok: false, error: "not a SKILL.md file" };
+      const content = await fs.promises.readFile(p, "utf8");
+      return { ok: true, content };
+    } catch (err) {
+      return { ok: false, error: String(err) };
+    }
+  });
+
+  // Export: ask where to save, write pretty JSON.
+  handle("app:saveJson", async (_e, { defaultName, data }) => {
+    const res = await dialog.showSaveDialog(getWindow(), {
+      title: "Export skills",
+      defaultPath: path.join(HOMEDIR, "Downloads", defaultName || "skillo-skills.json"),
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+    if (res.canceled || !res.filePath) return null;
+    await fs.promises.writeFile(res.filePath, JSON.stringify(data, null, 2));
+    return res.filePath;
+  });
+
+  // Import: pick a JSON file exported from Skillo and parse it.
+  handle("app:openJson", async () => {
+    const res = await dialog.showOpenDialog(getWindow(), {
+      title: "Import skills",
+      properties: ["openFile"],
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+    if (res.canceled || !res.filePaths.length) return null;
+    try {
+      return { ok: true, data: JSON.parse(await fs.promises.readFile(res.filePaths[0], "utf8")) };
+    } catch (err) {
+      return { ok: false, error: String(err) };
+    }
+  });
+
+  // Health check: every installed skill's folder + SKILL.md still exist?
+  handle("skills:doctor", async (_e, { cwd }) => {
+    const issues = [];
+    const scopes = [
+      { scope: "project", cwd },
+      { scope: "global", cwd: HOMEDIR },
+    ];
+    for (const { scope, dir } of scopes) {
+      const r = await handlers.get("skills:list")(null, { cwd: dir, scope });
+      if (!r.ok) {
+        issues.push({ scope, kind: "list-failed", detail: String(r.error || "") });
+        continue;
+      }
+      for (const s of r.items) {
+        if (!fs.existsSync(s.path)) {
+          issues.push({ name: s.name, path: s.path, scope, kind: "missing-folder" });
+        } else if (!fs.existsSync(path.join(s.path, "SKILL.md"))) {
+          issues.push({ name: s.name, path: s.path, scope, kind: "missing-skill-md" });
+        }
+      }
+    }
+    const lockfile = fs.existsSync(path.join(cwd || HOMEDIR, "skills-lock.json"));
+    return { ok: issues.length === 0, issues, lockfile };
+  });
 
   return { handlers, VERSION_RE };
 }

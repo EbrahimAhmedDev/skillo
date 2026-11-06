@@ -21,6 +21,59 @@ const dict = {
       remove: "Remove",
       all: "All",
       source: "source",
+      filter: "Filter installed skills…",
+      sort: "Sort by",
+      sort_name: "Name",
+      sort_source: "Source",
+      sort_agents: "Most agents",
+      sort_path: "Folder",
+      health: "Health check",
+      selectAll: "Select all",
+      selected: "{n} selected",
+      updateSelected: "Update selected",
+      removeSelected: "Remove selected",
+      pickHint: "Include this skill in bulk actions",
+      view: "SKILL.md",
+    },
+    viewer: {
+      title: "SKILL.md",
+      loading: "Loading…",
+      missing: "The file could not be read (moved or deleted?)",
+      openInEditor: "Open in editor",
+    },
+    health: {
+      title: "Health check",
+      hint: "Verifies every installed skill's folder and SKILL.md still exist, plus the project lockfile.",
+      running: "Checking…",
+      allGood: "All installed skills check out fine.",
+      issues: "{n} issue(s) found:",
+      kinds: {
+        "missing-folder": "missing folder",
+        "missing-skill-md": "no SKILL.md",
+        "list-failed": "list failed",
+      },
+      lockYes: "lockfile present",
+      lockNo: "no lockfile",
+      runAgain: "Check again",
+    },
+    backup: {
+      title: "Backup & restore",
+      hint: "Export installed skills (project + global) as JSON, or import a file and reinstall its packages.",
+      export: "Export",
+      import: "Import file",
+      empty: "Nothing to export yet — install or create a skill first.",
+      exportedTo: "Exported (see your Downloads folder or the save dialog).",
+      loaded: "Found {n} package(s) ready to reinstall.",
+      unusable: "The file does not reference any known skill sources.",
+      skillsCount: "{n} skills",
+      installBtn: "Install",
+      installedOk: "Reinstalled {n} skill(s).",
+      installFailed: "Install failed — check the live strip for what the CLI said.",
+    },
+    history: {
+      title: "Recent operations",
+      hint: "Local log of every install / remove / update / sync run by Skillo on this machine.",
+      empty: "No operations recorded yet.",
     },
     search: {
       title: "Find skills",
@@ -137,6 +190,59 @@ const dict = {
       remove: "إزالة",
       all: "الكل",
       source: "المصدر",
+      filter: "رشّح السكيلز المتثبتة…",
+      sort: "الترتيب",
+      sort_name: "الاسم",
+      sort_source: "المصدر",
+      sort_agents: "أكثر agents",
+      sort_path: "المجلد",
+      health: "فحص الصحة",
+      selectAll: "تحديد الكل",
+      selected: "{n} محددة",
+      updateSelected: "تحديث المحدد",
+      removeSelected: "إزالة المحدد",
+      pickHint: "ضمّن السكيل ده في العمليات الجماعية",
+      view: "SKILL.md",
+    },
+    viewer: {
+      title: "SKILL.md",
+      loading: "جاري التحميل…",
+      missing: "مقدرش أقرا الملف (متغير مكانه أو اتمسح؟)",
+      openInEditor: "افتح في المحرر",
+    },
+    health: {
+      title: "فحص الصحة",
+      hint: "يتحقق أن كل سكيل متثبته لسه مجلده وملف SKILL.md موجودين، وكمان وجود skills-lock.json في المشروع.",
+      running: "جاري الفحص…",
+      allGood: "كل السكيلز المتثبتة سليمة.",
+      issues: "لقيت {n} مشكلة:",
+      kinds: {
+        "missing-folder": "مجلد مفقود",
+        "missing-skill-md": "مفيش SKILL.md",
+        "list-failed": "فشلت القراءة",
+      },
+      lockYes: "الملف موجود",
+      lockNo: "مش موجود",
+      runAgain: "افحص تاني",
+    },
+    backup: {
+      title: "نسخ احتياطي واستعادة",
+      hint: "صدّر السكيلز المتثبتة (المشروع + العام) كملف JSON، أو فرجع ملف وسطّب حزمه من جديد.",
+      export: "تصدير",
+      import: "اختر ملف",
+      empty: "مفيش حاجة للتصدير لسه — سطّب أو اعمل سكيل الأول.",
+      exportedTo: "اتصدّرت (شوف مجلد التنزيلات أو نافذة الحفظ).",
+      loaded: "لقيت {n} حزمة جاهزة للتثبيت من جديد.",
+      unusable: "الملف مفيهوش مصادر سكيلز معروفة.",
+      skillsCount: "{n} سكيل",
+      installBtn: "تثبيت",
+      installedOk: "اتثبّت {n} سكيل من جديد.",
+      installFailed: "التثبيت فشل — شوف الشريط السفلي لمعرفة ما قاله الـ CLI.",
+    },
+    history: {
+      title: "آخر العمليات",
+      hint: "سجل محلي لكل تثبيت / إزالة / تحديث أعملته Skillo على الجهاز ده.",
+      empty: "مفيش عمليات مسجلة لسه.",
     },
     search: {
       title: "دوّر على سكيلز",
@@ -231,12 +337,15 @@ const I18nContext = createContext(null);
 
 export function I18nProvider({ children }) {
   const [lang, setLang] = useState(() => localStorage.getItem("skillo.lang") || "en");
-  const t = useCallback((path) => {
+  const t = useCallback((path, params) => {
     const parts = path.split(".");
     let cur = dict[lang] || dict.en;
     for (const p of parts) {
       if (cur == null) break;
       cur = cur[p];
+    }
+    if (params && typeof cur === "string") {
+      return cur.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? `{${k}}`));
     }
     return cur ?? path;
   }, [lang]);

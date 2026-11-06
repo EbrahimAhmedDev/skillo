@@ -36,6 +36,13 @@ export const api = {
   pickFolder: guarded("pickFolder", null),
   defaultCwd: guarded("defaultCwd", ""),
   openPath: guarded("openPath", true),
+
+  history: guarded("history", { ok: true, items: [] }),
+  readSkillFile: guarded("readSkillFile", { ok: false, content: "", error: UNAVAILABLE }),
+  saveJson: guarded("saveJson", null),
+  openJson: guarded("openJson", { ok: false, error: UNAVAILABLE }),
+  doctor: guarded("doctor", { ok: false, issues: [], error: UNAVAILABLE }),
+
   onRunStarted: (...a) => window.skillo?.onRunStarted(...a),
   onRunStream: (...a) => window.skillo?.onRunStream(...a),
   onRunDone: (...a) => window.skillo?.onRunDone(...a),
