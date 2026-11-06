@@ -69,10 +69,6 @@ export default function App() {
             {t("settings.pick")}
           </button>
         </div>
-        <div className="lang-toggle">
-          <button aria-pressed={lang === "en"} onClick={() => setLang("en")}>EN</button>
-          <button aria-pressed={lang === "ar"} onClick={() => setLang("ar")}>AR</button>
-        </div>
       </header>
 
       <div className="mainrails">
