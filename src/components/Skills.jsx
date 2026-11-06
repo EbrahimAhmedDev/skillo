@@ -234,14 +234,20 @@ export default function Skills({ cwd, scope, setScope, refreshKey }) {
           const key = s.name + s.path;
           const choosable = selected.has(key);
           return (
-            <article className="skill-card" key={key}>
-              {anythingSelected && (
-                <label className="pick-box" title={t("skills.pickHint")}>
-                  <input type="checkbox" checked={choosable} onChange={() => toggleSelect(key)} />
-                </label>
-              )}
+            <article className={`skill-card ${anythingSelected ? "has-pick" : ""}`} key={key}>
               <div className="row-top">
-                <span className="skill-name">{s.name}</span>
+                <div className="row-name">
+                  {anythingSelected && (
+                    <input
+                      type="checkbox"
+                      checked={choosable}
+                      onChange={() => toggleSelect(key)}
+                      aria-label={t("skills.pickHint")}
+                      className="pick-inline"
+                    />
+                  )}
+                  <span className="skill-name">{s.name}</span>
+                </div>
                 <span className="badge">{s.status || t("skills.status")}</span>
               </div>
 

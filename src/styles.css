@@ -481,15 +481,20 @@ input::placeholder { color: var(--ink-faint); }
 .bulk-bar b { color: var(--ink); font-size: 13px; }
 
 .skill-card { position: relative; }
-.skill-card .pick-box {
-  position: absolute;
-  inset-inline-start: 16px;
-  top: 16px;
-  display: flex;
+/* inline selection checkbox, sits left of the skill name */
+.skill-card .row-name {
+  display: inline-flex;
   align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
-.skill-card .pick-box input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
-.skill-card.has-pick .row-top { padding-inline-start: 26px; }
+.skill-card .pick-inline {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex: none;
+}
 
 /* ---------- SKILL.md viewer + health modal ---------- */
 
