@@ -23,18 +23,51 @@
     "test": "node test/parsers.test.cjs",
     "smoke": "ESK_SMOKE=1 electron .",
     "desktop": "node scripts/install-desktop.cjs",
-    "package": "electron-builder --linux AppImage"
+    "package": "electron-builder --linux --publish never",
+    "package:win": "electron-builder --win --publish never"
   },
   "build": {
     "appId": "dev.ebrahim.skillo",
     "productName": "Skillo",
-    "directories": { "output": "release" },
-    "files": ["electron/**/*", "dist/**/*", "package.json"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "dist/**/*",
+      "package.json"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "EbrahimAhmedDev",
+      "repo": "skillo"
+    },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
       "category": "Development",
+      "maintainer": "Ebrahim <ebrahim.a77med@gmail.com>",
       "icon": "assets/icons",
-      "desktop": { "Name": "Skillo", "Comment": "Skills manager for your AI agents" }
+      "desktop": {
+        "Name": "Skillo",
+        "Comment": "Skills manager for your AI agents"
+      }
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/icon.png"
     }
   },
   "dependencies": {
