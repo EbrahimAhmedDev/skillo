@@ -14,6 +14,12 @@ const icons = {
       <path d="m15.5 15.5 5 5" />
     </svg>
   ),
+  create: (
+    <svg className="glyph" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M12 8v8M8 12h8" />
+    </svg>
+  ),
   advanced: (
     <svg className="glyph" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M10 3h4M12 3v6l6 10a1.8 1.8 0 0 1-1.6 2.8H7.6A1.8 1.8 0 0 1 6 19l6-10V3" />

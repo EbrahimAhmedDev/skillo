@@ -4,6 +4,7 @@ import { useI18n } from "./i18n.jsx";
 import Skills from "./components/Skills.jsx";
 import Find from "./components/Find.jsx";
 import Advanced from "./components/Advanced.jsx";
+import Create from "./components/Create.jsx";
 import Settings from "./components/Settings.jsx";
 import RunBar from "./components/RunBar.jsx";
 import icons from "./components/icons.jsx";
@@ -44,6 +45,7 @@ export default function App() {
   const nav = [
     ["skills", t("nav.skills")],
     ["find", t("nav.find")],
+    ["create", t("nav.create")],
     ["advanced", t("nav.advanced")],
     ["settings", t("nav.settings")],
   ];
@@ -100,6 +102,12 @@ export default function App() {
                 setRefreshKey((k) => k + 1);
                 toast(t("toast.added"));
               }}
+            />
+          )}
+          {view === "create" && (
+            <Create
+              cwd={cwd}
+              onDone={() => toast(t("toast.inited"))}
             />
           )}
           {view === "advanced" && <Advanced cwd={cwd} />}

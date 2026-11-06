@@ -7,7 +7,7 @@ import InstallModal from "./InstallModal.jsx";
 
 /** How long typing stays quiet before the search fires, and the smallest
  *  query the skills.sh API accepts (≥ 2 chars). */
-const LIVE_DELAY = 400;
+const LIVE_DELAY = 250;
 const MIN_QUERY = 2;
 
 export default function Find({ cwd, onDone }) {
@@ -17,57 +17,91 @@ export default function Find({ cwd, onDone }) {
   const [note, setNote] = useState(null); // { kind: "info" | "error", text }
   const [busy, setBusy] = useState(false);
   const [modal, setModal] = useState(null); // { source, preselect }
-  const seqRef = useRef(0); // cancels stale responses while the user keeps typing
+
+  // Speed kit: a generation counter cancels stale responses, the cache makes
+  // revisited queries instant, and shortening a query filters the previous
+  // (longer) result set locally instead of hitting the network again.
+  const seqRef = useRef(0);
+  const cacheRef = useRef(new Map()); // query → items
+  const fullRef = useRef(null); // { term, items } of the last network result
 
   // live search: rerun whenever the (debounced) input settles
   const settledQuery = useDebouncedValue(query, LIVE_DELAY);
 
-  const search = useCallback(async (raw) => {
-    const term = String(raw || "").trim();
-    if (term.length < MIN_QUERY || looksLikeRepo(term)) return;
+  const apply = useCallback((items, note) => {
+    setResults(items);
+    setNote(note);
+  }, []);
 
-    const seq = ++seqRef.current;
-    const isStale = () => seq !== seqRef.current;
-    setBusy(true);
-    setNote(null);
+  const search = useCallback(
+    async (raw) => {
+      const term = String(raw || "").trim();
+      const mySeq = ++seqRef.current;
+      const stale = () => mySeq !== seqRef.current;
 
-    // path 1 — skills.sh web search (online)
-    const web = await api.webSearch(term).catch(() => null);
-    if (isStale()) return;
-    if (web?.ok) {
-      const items = web.items.map((r) => ({
-        ...r,
-        installsText: r.installsText || fmtInstalls(r.installs),
-      }));
-      setResults(items);
+      if (term.length < MIN_QUERY || looksLikeRepo(term)) {
+        setBusy(false);
+        if (term.length < MIN_QUERY) apply([], null);
+        return;
+      }
+
+      setNote(null);
+
+      // 1) exact cache hit — instant
+      if (cacheRef.current.has(term)) {
+        setBusy(false);
+        const items = cacheRef.current.get(term);
+        apply(items, items.length ? null : { kind: "info", text: t("search.resultsEmpty") });
+        return;
+      }
+
+      // 2) the new query is a prefix of the last network search → filter its
+      //    (unfiltered) result set locally, no network round-trip
+      const full = fullRef.current;
+      if (full && full.fullSet.length && full.term.startsWith(term)) {
+        setBusy(false);
+        const needle = term.toLowerCase();
+        const items = full.fullSet.filter(
+          (r) =>
+            String(r.name).toLowerCase().includes(needle) ||
+            String(r.source).toLowerCase().includes(needle),
+        );
+        apply(items, items.length ? null : { kind: "info", text: t("search.resultsEmpty") });
+        return;
+      }
+
+      // 3) network — skills.sh search, then the CLI as fallback
+      setBusy(true);
+      const web = await api.webSearch(term).catch(() => null);
+      if (stale()) return; // a newer keystroke already took over
+      if (web?.ok) {
+        const items = web.items.map((r) => ({
+          ...r,
+          installsText: r.installsText || fmtInstalls(r.installs),
+        }));
+        cacheRef.current.set(term, items);
+        fullRef.current = { term, fullSet: items };
+        setBusy(false);
+        apply(items, items.length ? null : { kind: "info", text: t("search.resultsEmpty") });
+        return;
+      }
+
+      const cli = await api.find({ query: term }).catch(() => null);
+      if (stale()) return;
       setBusy(false);
-      if (!items.length) setNote({ kind: "info", text: t("search.resultsEmpty") });
-      return;
-    }
-
-    // path 2 — the CLI itself (`npx skills find`) when skills.sh is unreachable
-    const cli = await api.find({ query: term }).catch(() => null);
-    if (isStale()) return;
-    setBusy(false);
-    if (cli?.ok && cli.items?.length) {
-      setResults(cli.items);
-      setNote({ kind: "info", text: t("search.onlineError") });
-    } else {
-      setResults([]);
-      setNote({ kind: "error", text: t("search.resultsEmpty") });
-    }
-  }, [t]);
+      if (cli?.ok && cli.items?.length) {
+        cacheRef.current.set(term, cli.items);
+        fullRef.current = { term, fullSet: cli.items };
+        apply(cli.items, { kind: "info", text: t("search.onlineError") });
+      } else {
+        apply([], { kind: "error", text: t("search.resultsEmpty") });
+      }
+    },
+    [apply, t],
+  );
 
   useEffect(() => {
-    if (looksLikeRepo(settledQuery.trim())) {
-      // a repo is previewed, not searched — cancel any in-flight search
-      seqRef.current += 1;
-      setBusy(false);
-      setResults([]);
-      setNote(null);
-      return;
-    }
-    search(settledQuery);
+    void search(settledQuery);
   }, [settledQuery, search]);
 
   return (
@@ -84,7 +118,11 @@ export default function Find({ cwd, onDone }) {
           onKeyDown={(e) => e.key === "Enter" && search(query)}
           aria-label={t("search.inputLabel")}
         />
-        <button className="btn-primary" onClick={() => search(query)} disabled={busy || query.trim().length < MIN_QUERY}>
+        <button
+          className="btn-primary"
+          onClick={() => search(query)}
+          disabled={busy || query.trim().length < MIN_QUERY}
+        >
           {t("search.searchBtn")}
         </button>
       </div>

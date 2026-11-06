@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("skillo", {
   installLock: (opts) => ipcRenderer.invoke("skills:installLock", opts),
   sync: (opts) => ipcRenderer.invoke("skills:sync", opts),
   init: (opts) => ipcRenderer.invoke("skills:init", opts),
+  patchDescription: (opts) => ipcRenderer.invoke("skills:patchDescription", opts),
   find: (opts) => ipcRenderer.invoke("skills:find", opts),
   webSearch: (opts) => ipcRenderer.invoke("web:search", opts),
 

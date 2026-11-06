@@ -2,17 +2,34 @@ import React, { useEffect, useState } from "react";
 import api from "../api.js";
 import { useI18n } from "../i18n.jsx";
 
+/** Well-known agent ids accepted by `skills add --agent`. Auto-detect stays
+ *  the default; picking checkboxes sends the exact ids to the CLI. */
+const KNOWN_AGENTS = [
+  "claude-code",
+  "opencode",
+  "cursor",
+  "codex",
+  "github-copilot",
+  "windsurf",
+  "cline",
+  "gemini",
+  "antigravity",
+  "claude",
+];
+
 /**
  * The install dialog: previews a package (`npx skills add <pkg> -l`, installs
- * nothing), lets the user pick skills + agents + scope, then installs.
+ * nothing), lets the user pick skills + target agents (all or exact ids) +
+ * scope, then installs via the CLI.
  */
 export default function InstallModal({ source, preselect, cwd, onClose, onDone }) {
   const { t } = useI18n();
   const [state, setState] = useState("loading"); // loading | ready | installing | error
   const [skills, setSkills] = useState([]);
   const [picked, setPicked] = useState(new Set());
-  const [agentsAuto, setAgentsAuto] = useState(true);
-  const [agentText, setAgentText] = useState("");
+  const [mode, setMode] = useState("auto"); // auto | pick
+  const [agentIds, setAgentIds] = useState(new Set());
+  const [customText, setCustomText] = useState("");
   const [copy, setCopy] = useState(false);
   const [globalMode, setGlobalMode] = useState(false);
 
@@ -43,16 +60,26 @@ export default function InstallModal({ source, preselect, cwd, onClose, onDone }
     });
   };
 
+  const toggleAgent = (id) => {
+    setAgentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const confirm = async () => {
     setState("installing");
     let spec = [...picked];
     if (spec.length === 1 && spec[0] === "*") spec = []; // the CLI treats '*' as "all"
     if (!spec.length && preselect) spec = [preselect];
+    const manual = [...agentIds, ...customText.split(/[,\s]+/).filter(Boolean)];
     const r = await api.add({
       cwd,
       pkg: source,
       skills: spec,
-      agents: agentsAuto ? [] : agentText.split(/[,\s]+/).filter(Boolean),
+      agents: mode === "auto" ? [] : manual,
       global: globalMode,
       copy,
     });
@@ -94,22 +121,40 @@ export default function InstallModal({ source, preselect, cwd, onClose, onDone }
             </div>
 
             <span className="field-label">{t("modal.agents")}</span>
-            <label className="field-row">
-              <input
-                type="checkbox"
-                checked={agentsAuto}
-                onChange={(e) => setAgentsAuto(e.target.checked)}
-              />
-              {t("search.agentsAuto")}
-            </label>
-            {!agentsAuto && (
+            <div className="agent-mode">
+              <label className="field-row">
+                <input
+                  type="radio"
+                  checked={mode === "auto"}
+                  onChange={() => setMode("auto")}
+                />
+                {t("search.agentsAuto")}
+              </label>
+              <label className="field-row">
+                <input
+                  type="radio"
+                  checked={mode === "pick"}
+                  onChange={() => setMode("pick")}
+                />
+                {t("search.agentsPick")}
+              </label>
+            </div>
+
+            {mode === "pick" && (
               <>
-                <span className="field-label">{t("search.agentsManual")}</span>
+                <div className="agent-pick-list">
+                  {KNOWN_AGENTS.map((id) => (
+                    <label className={`agent-pick ${agentIds.has(id) ? "on" : ""}`} key={id}>
+                      <input type="checkbox" checked={agentIds.has(id)} onChange={() => toggleAgent(id)} />
+                      <span className="mono">{id}</span>
+                    </label>
+                  ))}
+                </div>
                 <input
                   type="text"
-                  value={agentText}
-                  placeholder="claude-code cursor opencode"
-                  onChange={(e) => setAgentText(e.target.value)}
+                  value={customText}
+                  placeholder={t("search.agentsCustom")}
+                  onChange={(e) => setCustomText(e.target.value)}
                 />
               </>
             )}
@@ -133,7 +178,7 @@ export default function InstallModal({ source, preselect, cwd, onClose, onDone }
           </button>
           <button
             className="btn-primary"
-            disabled={picked.size === 0 || state !== "ready"}
+            disabled={picked.size === 0 || state !== "ready" || (mode === "pick" && !agentIds.size && !customText.trim())}
             onClick={confirm}
           >
             {t("modal.confirm")}

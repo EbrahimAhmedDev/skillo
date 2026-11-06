@@ -7,6 +7,8 @@
  */
 
 const { ipcMain, dialog, shell } = require("electron");
+const path = require("node:path");
+const fs = require("node:fs");
 const os = require("node:os");
 const { parseSkillListing, parseFindOutput, tryJSON } = require("./parsers.cjs");
 const { searchSkillsSh } = require("./net.cjs");
@@ -106,6 +108,21 @@ function registerIpc({ runSkills, getWindow }) {
   handle("skills:init", async (_e, { cwd, name }) => {
     const r = await runSkills(["init", name || "new-skill"], { cwd, label: "init", timeoutMs: 60_000 });
     return { ok: r.code === 0, raw: r.stdout + r.stderr, code: r.code };
+  });
+
+  // `skills init` creates a template SKILL.md — fill in the description the
+  // user typed in the form (exact line replace in the frontmatter).
+  handle("skills:patchDescription", async (_e, { dir, description }) => {
+    try {
+      const file = path.join(dir, "SKILL.md");
+      const text = fs.readFileSync(file, "utf8");
+      const cleaned = String(description || "").replace(/^[\s#]+/, "").trim();
+      const patched = text.replace(/^description:\s*.*$/m, `description: ${cleaned}`);
+      fs.writeFileSync(file, patched);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: String(err) };
+    }
   });
 
   // npx skills find <query> — fallback search when skills.sh is unreachable

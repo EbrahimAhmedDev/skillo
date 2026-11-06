@@ -30,6 +30,7 @@ export const api = {
   installLock: guarded("installLock", { ok: false, error: UNAVAILABLE, raw: UNAVAILABLE }),
   sync: guarded("sync", { ok: false, error: UNAVAILABLE, raw: UNAVAILABLE }),
   init: guarded("init", { ok: false, error: UNAVAILABLE, raw: UNAVAILABLE }),
+  patchDescription: guarded("patchDescription", { ok: false, error: UNAVAILABLE }),
   find: guarded("find", fallback.find),
   webSearch: guarded("webSearch", fallback.webSearch),
   pickFolder: guarded("pickFolder", null),

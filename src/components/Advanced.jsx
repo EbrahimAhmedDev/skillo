@@ -6,7 +6,6 @@ export default function Advanced({ cwd }) {
   const { t } = useI18n();
   const [dryLock, setDryLock] = useState(true);
   const [drySync, setDrySync] = useState(true);
-  const [name, setName] = useState("");
 
   return (
     <section>
@@ -43,30 +42,6 @@ export default function Advanced({ cwd }) {
               {t("advanced.dryRun")}
             </label>
             <button className="btn-primary" onClick={() => api.installLock({ cwd, dryRun: dryLock })}>
-              {t("advanced.run")}
-            </button>
-          </div>
-        </div>
-
-        <div className="adv-card">
-          <h3>{t("advanced.initTitle")}</h3>
-          <p>{t("advanced.initHint")}</p>
-          <span className="cmdline">npx skills init {name || "<name>"}</span>
-          <div className="toolbar" style={{ marginBottom: 0 }}>
-            <input
-              className="inline-input"
-              placeholder={t("advanced.namePlaceholder")}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <button
-              className="btn-primary"
-              disabled={!name.trim()}
-              onClick={async () => {
-                await api.init({ cwd, name: name.trim() });
-                setName("");
-              }}
-            >
               {t("advanced.run")}
             </button>
           </div>
